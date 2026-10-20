@@ -38,6 +38,9 @@ export default function App() {
   const [quantity, setQuantity] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  const [searchName, setSearchName] = useState<string>("");
+  const [searchedItems, setSearchedItems] = useState<Item[]>([]);
+
   /**
    * Database State
    *
@@ -77,6 +80,7 @@ export default function App() {
     try {
       const value = await fetchItems(db);
       setItems(value);
+      setFilteredItems(value);
     } catch (err) {
       console.log("Failed to fetch items", err);
     }
@@ -123,6 +127,13 @@ export default function App() {
     }
   };
 
+  const filterItems = () => {
+    const filtered = items.filter((item) =>
+      item.name.toLowerCase().includes(searchName.toLowerCase()),
+    );
+
+    setFilteredItems(filtered);
+  };
   /**
    * Start Edit Function
    *
@@ -217,9 +228,19 @@ export default function App() {
         title={editingId === null ? "Save Item" : "Update Item"}
         onPress={saveOrUpdate}
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Search "
+        value={searchName}
+        onChangeText={setSearchName}
+      />
+      <Button
+        title={editingId === null ? "Search" : "Search"}
+        onPress={searchItems}
+      />
       <FlatList
         style={styles.list}
-        data={items}
+        data={searchedItems}
         keyExtractor={(item) => item.id.toString()}
         ItemSeparatorComponent={() => (
           <View
