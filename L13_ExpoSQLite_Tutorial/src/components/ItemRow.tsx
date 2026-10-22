@@ -7,9 +7,19 @@ type Props = {
   quantity: number;
   onEdit: () => void;
   onDelete: () => void;
+
+  //new
+  selected: boolean;
+  onSelect: () => void;
 };
 
-const ItemRow: React.FC<Props> = ({ name, quantity, onEdit, onDelete }) => {
+const ItemRow: React.FC<Props> = ({
+  name,
+  quantity,
+  onEdit,
+  selected,
+  onSelect,
+}) => {
   return (
     <View style={styles.container}>
       {/* Left side: Item info */}
@@ -31,14 +41,29 @@ const ItemRow: React.FC<Props> = ({ name, quantity, onEdit, onDelete }) => {
           <MaterialIcons name="edit" size={24} color="#007BFF" />
         </TouchableOpacity>
 
+        {/* //new */}
         <TouchableOpacity
+          onPress={onSelect}
+          accessibilityRole="button"
+          accessibilityLabel={`Select ${name}`}
+          style={styles.iconButton}
+        >
+          <MaterialIcons
+            name={selected ? "check-box" : "check-box-outline-blank"}
+            size={24}
+            color="#007BFF"
+          />
+        </TouchableOpacity>
+        {/* end */}
+
+        {/* <TouchableOpacity
           onPress={onDelete}
           accessibilityRole="button"
           accessibilityLabel={`Delete ${name}`}
           style={styles.iconButton}
         >
           <MaterialIcons name="delete" size={24} color="#D32F2F" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

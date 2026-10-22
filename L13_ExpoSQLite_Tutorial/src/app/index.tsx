@@ -38,8 +38,12 @@ export default function App() {
   const [quantity, setQuantity] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  //new: for search
   const [searchName, setSearchName] = useState<string>("");
   const [searchedItems, setSearchedItems] = useState<Item[]>([]);
+
+  //new: for selecting deletes
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   /**
    * Database State
@@ -80,7 +84,9 @@ export default function App() {
     try {
       const value = await fetchItems(db);
       setItems(value);
-      setFilteredItems(value);
+      //new
+      setSearchedItems(value);
+      //end
     } catch (err) {
       console.log("Failed to fetch items", err);
     }
@@ -127,12 +133,50 @@ export default function App() {
     }
   };
 
-  const filterItems = () => {
-    const filtered = items.filter((item) =>
+  //whole function is new
+  const searchItems = () => {
+    const searched = items.filter((item) =>
       item.name.toLowerCase().includes(searchName.toLowerCase()),
     );
 
-    setFilteredItems(filtered);
+    setSearchedItems(searched);
+  };
+
+  //new
+  const toggleSelection = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  //new
+  const deleteSelectedItems = () => {
+    if (selectedIds.length === 0) return;
+
+    Alert.alert("Delete selected items?", "This cannot be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+
+        onPress: async () => {
+          try {
+            //learned for loops
+            // https://www.tutorialsteacher.com/typescript/for-loop
+            for (const id of selectedIds) {
+              await deleteItem(db, id);
+            }
+
+            setSelectedIds([]);
+            await loadItems();
+          } catch (err) {
+            console.log("Failed to delete selected items", err);
+          }
+        },
+      },
+    ]);
   };
   /**
    * Start Edit Function
@@ -228,6 +272,7 @@ export default function App() {
         title={editingId === null ? "Save Item" : "Update Item"}
         onPress={saveOrUpdate}
       />
+
       <TextInput
         style={styles.input}
         placeholder="Search "
@@ -238,6 +283,15 @@ export default function App() {
         title={editingId === null ? "Search" : "Search"}
         onPress={searchItems}
       />
+
+      {/* used disabled prop to make button unclickable unless there are items selected
+        https://reactnative.dev/docs/button#disabled */}
+      <Button
+        title={"Delete Selected"}
+        onPress={deleteSelectedItems}
+        disabled={selectedIds.length === 0}
+      />
+
       <FlatList
         style={styles.list}
         data={searchedItems}
@@ -258,11 +312,19 @@ export default function App() {
             quantity={item.quantity}
             onEdit={() => startEdit(item)}
             onDelete={() => confirmDelete(item.id)}
+            //new
+            selected={selectedIds.includes(item.id)}
+            onSelect={() => toggleSelection(item.id)}
+            //end
           />
         )}
         ListEmptyComponent={
           <Text style={{ textAlign: "center", marginTop: 24, color: "#888" }}>
-            No items yet. Add your first one above.
+            {/* //new */}
+            {searchName.trim() !== ""
+              ? "No items match your search."
+              : "No items yet. Add your first one above."}
+            {/* end */}
           </Text>
         }
         contentContainerStyle={
