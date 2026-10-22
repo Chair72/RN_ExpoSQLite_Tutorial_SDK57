@@ -38,11 +38,9 @@ export default function App() {
   const [quantity, setQuantity] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  //new: for search
   const [searchName, setSearchName] = useState<string>("");
   const [searchedItems, setSearchedItems] = useState<Item[]>([]);
 
-  //new: for selecting deletes
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   /**
@@ -84,9 +82,7 @@ export default function App() {
     try {
       const value = await fetchItems(db);
       setItems(value);
-      //new
       setSearchedItems(value);
-      //end
     } catch (err) {
       console.log("Failed to fetch items", err);
     }
@@ -133,7 +129,10 @@ export default function App() {
     }
   };
 
-  //whole function is new
+  //used filter() method to filter items by if they match the search
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+  //also used .includes() to determine if certain values were in an array 
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
   const searchItems = () => {
     const searched = items.filter((item) =>
       item.name.toLowerCase().includes(searchName.toLowerCase()),
@@ -142,16 +141,18 @@ export default function App() {
     setSearchedItems(searched);
   };
 
-  //new
+  //if selected item is already selected, remove it from array
+  //otherwise, add it to the array. used concat() to create new array
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/concat
   const toggleSelection = (id: number) => {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
     } else {
-      setSelectedIds([...selectedIds, id]);
+      setSelectedIds(selectedIds.concat(id));
     }
   };
 
-  //new
+  //deletes every selected id
   const deleteSelectedItems = () => {
     if (selectedIds.length === 0) return;
 
@@ -312,19 +313,18 @@ export default function App() {
             quantity={item.quantity}
             onEdit={() => startEdit(item)}
             onDelete={() => confirmDelete(item.id)}
-            //new
+
             selected={selectedIds.includes(item.id)}
             onSelect={() => toggleSelection(item.id)}
-            //end
           />
         )}
         ListEmptyComponent={
           <Text style={{ textAlign: "center", marginTop: 24, color: "#888" }}>
-            {/* //new */}
+
             {searchName.trim() !== ""
               ? "No items match your search."
               : "No items yet. Add your first one above."}
-            {/* end */}
+
           </Text>
         }
         contentContainerStyle={

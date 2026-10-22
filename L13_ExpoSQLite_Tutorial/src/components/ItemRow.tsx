@@ -8,7 +8,6 @@ type Props = {
   onEdit: () => void;
   onDelete: () => void;
 
-  //new
   selected: boolean;
   onSelect: () => void;
 };
@@ -41,7 +40,6 @@ const ItemRow: React.FC<Props> = ({
           <MaterialIcons name="edit" size={24} color="#007BFF" />
         </TouchableOpacity>
 
-        {/* //new */}
         <TouchableOpacity
           onPress={onSelect}
           accessibilityRole="button"
